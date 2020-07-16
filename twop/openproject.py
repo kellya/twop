@@ -1,13 +1,9 @@
-#!/usr/bin/python3.8
-# test OpenProject API
 import requests as request
 import json
 import sys
 
 # https://docs.openproject.org/api/filters/
 
-API_KEY = '5108fffd57c26dafc44a0aaa3cf2aaf9ec8e238348f564dec7e96505da322574'
-SITE = 'http://10.135.96.19:443'
 
 
 class openproject:
