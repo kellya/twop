@@ -1,5 +1,6 @@
 # my configuration file
-twop.json
+twop/twop.json
+examples/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

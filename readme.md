@@ -1,4 +1,26 @@
-TaskWarriorOpenProject Sync Tool
+TaskWarriorOpenProject
 =============================
 
-Trying to syncronize task warrior tasks with OpenProject, back and forward
+Purpose of this projects is to scratch my needs:
+
+1. Synchronize my TaskWarrior tasks with Team OpenProject Server
+2. Learn some git
+3. Learn some python
+
+I try to it generic, but covering my needs.
+
+Feel free to use it, but at your own risc.
+
+
+
+### Using it
+
+    $ git clone https://github.com/flippipe/twop
+    $ cd twop
+    $ twop/bin/twop.sh
+
+Firt time it run, tries to generate the configuration file. Be prepared to fullfield your `OpenProject URL`  and your `API Key`.
+
+### thanks for...
+
+Scot, for your [python-packaging tutorial](https://python-packaging.readthedocs.io/en/latest/about.html)

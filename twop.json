@@ -1,0 +1,58 @@
+{
+  "lessThanDaysAgo": "30",
+  "op": {
+    "baseUrl": "http://10.135.96.19:443",
+    "apiKey": "5108fffd57c26dafc44a0aaa3cf2aaf9ec8e238348f564dec7e96505da322574",
+    "userId": 4,
+    "projectID": "6"
+  },
+  "maps": [
+    {
+      "outros-projetos": "MIX"
+    },
+    {
+      "acessos-remotos": "SSLVPN"
+    },
+    {
+      "smtp-outbound": "Haraka"
+    },
+    {
+      "dns-anycast": "DNSAnycast"
+    },
+    {
+      "tufin": "Tufin"
+    },
+    {
+      "ipa": "IPA"
+    },
+    {
+      "troubleshoot": "TroubleShoot"
+    },
+    {
+      "proxy": "Proxy"
+    },
+    {
+      "fa": "LinOTP"
+    }
+  ],
+  "Futurosmaps": [
+    {
+      "team-sss": ""
+    },
+    {
+      "pki-interna": ""
+    },
+    {
+      "nginx-netapp": ""
+    },
+    {
+      "ntp": ""
+    },
+    {
+      "conf-server-ldap": ""
+    },
+    {
+      "kannel": ""
+    }
+  ]
+}
