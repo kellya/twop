@@ -1,6 +1,7 @@
-import requests as request
 import json
 import sys
+
+import requests as request
 
 # https://docs.openproject.org/api/filters/
 
@@ -54,8 +55,8 @@ class openproject:
 
         # return jr['_embedded']['elements']
 
-    def directCall(self,url,method='GET'):
-        return self._callCurl(method,url)
+    def directCall(self, url, method='GET'):
+        return self._callCurl(method, url)
 
     def whoami(self):
         """
@@ -64,7 +65,7 @@ class openproject:
         URI = '/api/v3/users/me'
         return self._callCurl('GET', URI)
 
-    def searchWorkPackage(self, userId, days,projectId):
+    def searchWorkPackage(self, userId, days, projectId):
         """
         Search My Tasks modified in last days
         """
@@ -74,7 +75,7 @@ class openproject:
             {"updatedAt": {"operator": ">t-", "values": [days]}}]
 
         # URI = '/api/v3/projects/outros-projetos/queries/default?'+json.dumps(FILTER)
-        URI = "/api/v3/projects/{0}/queries/default?{1}".format(
+        URI = "/api/v3/projects/{0}/queries/default?filters={1}".format(
             projectId, json.dumps(FILTER))
         print(URI)
         ret = self._callCurl('GET', URI)
@@ -85,7 +86,6 @@ class openproject:
     def getWorkPackage(self, id):
         URI = '/api/v3/work_packages/'+str(id)
         return self._callCurl('GET', URI)
-
 
     def searchChildProjects(self, projectID):
         fProjectID = {"parent_id": {"operator": "=", "values": [projectID]}}
@@ -129,7 +129,6 @@ class openproject:
             print("{0:20s} {1:s}".format(
                 priority['name'], priority['_links']['self']['href']))
 
-
     def searchUuid(self, uuid):
         # FILTER='filters=[{"subjectOrId":{"operator":"**","values":["65"]}}]'
         FILTER = 'filters=[{"subprojectId":{"operator":"*","values":[]}},{"customField1":{"operator":"~","values":["454d939d"]}}]'
@@ -146,3 +145,53 @@ class openproject:
             # print(element)
             print("{0:3d} {1:40s} {2:s} ".format(
                 element['id'], element['_type'], element['subject']))
+
+
+class wp:
+
+    def __init__(self, wp):
+        self.all = wp
+        self.id = str(wp['id'])
+        self.uuid = wp['customField1']
+        self.entry = wp['createdAt']
+        self.description = wp['subject']
+        self.due = wp['dueDate']
+        self.scheduled = wp['startDate']
+
+        # if key in array:
+        # if wp['parent'] is not None and wp['parent']['id'] is not None:
+
+        try:
+            self.parent = wp['_embedded']['parent']['id']
+        except KeyError:
+            self.parent = None
+
+        try:
+            self.project = wp['_embedded']['project']['identifier']
+        except KeyError:
+            self.project = None
+
+        try:
+            self.priority = wp['_embedded']['priority']['name']
+        except KeyError:
+            self.priority = None
+
+        try:
+            self.assignee = wp['_embedded']['assignee']['id']
+        except KeyError:
+            self.assignee = None
+
+        try:
+            self.status = wp['_embedded']['status']['name']
+        except KeyError:
+            self.status = None
+
+        # testestestestestestes
+        @property
+        def uuid(self):
+            return self.__uuid
+
+        @uuid.setter
+        def uuid(self, x):
+            self.__uuid = x
+

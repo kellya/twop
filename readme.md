@@ -1,7 +1,7 @@
 TaskWarriorOpenProject
 =============================
 
-Purpose of this projects is to scratch my needs:
+Purpose of this projects is to scratch my own itches:
 
 1. Synchronize my TaskWarrior tasks with Team OpenProject Server
 2. Learn some git
