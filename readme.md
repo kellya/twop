@@ -24,3 +24,10 @@ Firt time it run, tries to generate the configuration file. Be prepared to fullf
 ### thanks for...
 
 Scot, for your [python-packaging tutorial](https://python-packaging.readthedocs.io/en/latest/about.html)
+
+
+### Lessons Learned
+
+| Context | Problem | Resolution | 
+|---|---|---|
+|OpenProject| PATCH call returns error: "Could not update the resource because of conflicting modifications." | In API call must be sent lockVersion attribute with the version return earlier |

@@ -3,6 +3,7 @@ import sys
 import json
 import openproject
 import taskwarrior
+import twopTask 
 
 # import argparse
 # import logging
@@ -83,33 +84,66 @@ def main():
     # read configuration
     config = _read_config()
 
-    op = openproject.openproject(
-        config['op']['baseUrl'], config['op']['apiKey'])
-    opWPs = op.searchWorkPackage(
-        config['op']['userId'], config['lessThanDaysAgo'], config['op']['projectID'])
 
-    tw = taskwarrior.taskwarrior(config['maps'])
+    op = openproject.openproject(
+        config['op']['baseUrl'], config['op']['apiKey'], config['op']['projectID'])
+    opWPs = op.searchWorkPackage(
+        config['op']['userId'], config['lessThanDaysAgo'])
+
+    tw = taskwarrior.taskwarrior()
 
     # get all recent work packages changed in last days
+    task = twopTask.task(config['maps'])
+
     for workPackage in opWPs:
-        wp = openproject.wp(op.directCall(
+        task.readFromOpenProject(op.directCall(
             workPackage['_links']['self']['href']))
 
+        print ("Working on WP: "+task.id)
         # for debuging
-        exclusions = ('0')
-        if wp.id in exclusions:
+        exclusions = ('0','57','65','103')
+        if task.id in exclusions:
             continue
 
-        # match with a existing task
-        if wp.uuid is not None:
+        if task.hasUuid():
+            print("tw.update")
+            tw.update(task)
+        else:
+            print("tw.new")
+            tw.new(task)
+            print("op.update")
+            op.update(task,'uuid')
+
+        break
+
+
+    # process task from TaskWarrior
+    twTasks = tw.searchTasks(config['lessThanDaysAgo'])
+    for twTask in twTasks:
+        print (twTask['description'])
+        print (type(twTask['entry'])    )
+
+        uuid=twTask['uuid']
+        print (uuid)
+        opTask = op.searchUuid(uuid)
+
+        task.readFromTaskwarrior(twTask)
+
+        if opTask is not None:
+            # op.update(task)
             pass
         else:
-            # create a new task in taskwarrior
-            uuid = tw.new(wp)
-            wp.updateUuid(uuid)
+            # create task
+            # op.new(task)
+            pass
 
-        sys.exit()
-        # openproject.openproject._ppjson(json.loads(task))
+        print(opTask)
+        
+        break
+
+
+
+
 
     # parser = argparse.ArgumentParser('tasksync', parents=[oauth2client.tools.argparser])
     # parser.add_argument('--debug', action='store_true', default=False, help='Enable debugging.')

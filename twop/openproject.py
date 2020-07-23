@@ -7,11 +7,15 @@ import requests as request
 
 
 class openproject:
+    """
+    This class is to interact with openproject
+    """
 
-    def __init__(self, baseUrl, apiKey, debug=False):
+    def __init__(self, baseUrl, apiKey, projectId, debug=False):
         self.baseUrl = baseUrl
         self.apiKey = apiKey
         self.debug = debug
+        self.projectId = projectId
 
     def _ppjson(self, json_object):
         """
@@ -27,15 +31,19 @@ class openproject:
         auth = ('apikey', self.apiKey)
 
         resp = ''
+        method = method.upper()
 
         if method == 'GET':
             resp = request.get(self.baseUrl + path, auth=auth)
         elif method == 'PUT':
-            resp = request.put(self.baseUrl + path,  data)
+            resp = request.put(self.baseUrl + path, auth=auth, json=data)
         elif method == 'POST':
-            resp = request.post(self.baseUrl + path, data)
+            resp = request.post(self.baseUrl + path, auth=auth, json=data)
         elif method == 'DELETE':
-            resp = request.delete(self.baseUrl + path, )
+            resp = request.delete(self.baseUrl + path, auth=auth)
+        elif method == 'PATCH':
+            resp = request.patch(self.baseUrl + path, auth=auth, json=data)
+
         else:
             print("Ups")
 
@@ -65,19 +73,21 @@ class openproject:
         URI = '/api/v3/users/me'
         return self._callCurl('GET', URI)
 
-    def searchWorkPackage(self, userId, days, projectId):
+    def searchWorkPackage(self, userId, days):
         """
         Search My Tasks modified in last days
         """
         FILTER = [
             {"subprojectId": {"operator": "*", "values": []}},
             {"assignee": {"operator": "=", "values": [userId]}},
-            {"updatedAt": {"operator": ">t-", "values": [days]}}]
+            {"updatedAt": {"operator": ">t-", "values": [days]}},
+            {"type": {"operator": "=", "values": ["1"]}}
+        ]
 
         # URI = '/api/v3/projects/outros-projetos/queries/default?'+json.dumps(FILTER)
         URI = "/api/v3/projects/{0}/queries/default?filters={1}".format(
-            projectId, json.dumps(FILTER))
-        print(URI)
+            self.projectId, json.dumps(FILTER))
+        # print(URI)
         ret = self._callCurl('GET', URI)
 
         # return just results
@@ -111,6 +121,45 @@ class openproject:
             ret.append(tmp)
         return ret
 
+    def _updateField_uuid(self, task):
+        wp = task.wp
+
+        data = {"customField1": task.uuid, "lockVersion": wp['lockVersion']}
+
+        self._callCurl(wp['_links']['updateImmediately']['method'],
+                       wp['_links']['updateImmediately']['href'],
+                       data)
+
+    def update(self, task, field=None):
+
+        if field is not None:
+            update_func = getattr(
+                self, '_updateField_{0}'.format(field), lambda x: x)
+            return update_func(task)
+
+        # TODO Generic update, finding fields to be updated
+
+
+    def searchUuid(self, uuid):
+        FILTER = [
+            {"subprojectId":{"operator":"*","values":[]}},
+            {"customField1":{"operator":"=","values":[uuid]}},
+            {"type": {"operator": "=", "values": ["1"]}}
+        ]
+        URI = "/api/v3/projects/{0}/queries/default?filters={1}".format(
+            self.projectId, json.dumps(FILTER))
+
+        result = self._callCurl('GET', URI)
+
+        if result['_embedded']['results']['count'] != 1:
+            return None
+
+        return result['_embedded']['results']['_embedded']['elements'][0]
+        
+
+    def new(self, task):
+        task.hello()
+
     """
     UnUsed Functions from previous testes
     """
@@ -129,13 +178,6 @@ class openproject:
             print("{0:20s} {1:s}".format(
                 priority['name'], priority['_links']['self']['href']))
 
-    def searchUuid(self, uuid):
-        # FILTER='filters=[{"subjectOrId":{"operator":"**","values":["65"]}}]'
-        FILTER = 'filters=[{"subprojectId":{"operator":"*","values":[]}},{"customField1":{"operator":"~","values":["454d939d"]}}]'
-        # URI = '/api/v3/projects/6/queries/default?'+FILTER
-        URI = '/api/v3/projects/outros-projetos/queries/default?'+FILTER
-        wp = self._callCurl('GET', URI)
-        print(wp)
 
     def searchEmpty(self):
         FILTER = '[{"subprojectId":{"operator":"*","values":[]}},{"customField1":{"operator":"!*","values":[]}},{"assignee":{"operator":"=","values":["4"]}}]'
@@ -145,53 +187,3 @@ class openproject:
             # print(element)
             print("{0:3d} {1:40s} {2:s} ".format(
                 element['id'], element['_type'], element['subject']))
-
-
-class wp:
-
-    def __init__(self, wp):
-        self.all = wp
-        self.id = str(wp['id'])
-        self.uuid = wp['customField1']
-        self.entry = wp['createdAt']
-        self.description = wp['subject']
-        self.due = wp['dueDate']
-        self.scheduled = wp['startDate']
-
-        # if key in array:
-        # if wp['parent'] is not None and wp['parent']['id'] is not None:
-
-        try:
-            self.parent = wp['_embedded']['parent']['id']
-        except KeyError:
-            self.parent = None
-
-        try:
-            self.project = wp['_embedded']['project']['identifier']
-        except KeyError:
-            self.project = None
-
-        try:
-            self.priority = wp['_embedded']['priority']['name']
-        except KeyError:
-            self.priority = None
-
-        try:
-            self.assignee = wp['_embedded']['assignee']['id']
-        except KeyError:
-            self.assignee = None
-
-        try:
-            self.status = wp['_embedded']['status']['name']
-        except KeyError:
-            self.status = None
-
-        # testestestestestestes
-        @property
-        def uuid(self):
-            return self.__uuid
-
-        @uuid.setter
-        def uuid(self, x):
-            self.__uuid = x
-

@@ -1,32 +1,15 @@
 # test taskWarrior API
 import re
 import sys
-from tasklib import TaskWarrior, Task
-
+import tasklib
 
 class taskwarrior:
+    """
+    This class is to interact with taskwarrior
+    """
 
     def __init__(self, maps={}):
-        self.tw = TaskWarrior()
-        self.mapTWOP = {}
-        self.mapOPTW = {}
-        self.fields = [
-            "status",
-            "uuid",
-            "description",
-            "due",
-            "scheduled",
-            "parent",
-            "project",
-            "priority"
-        ]
-
-        for op, tw in maps.items():
-            self.mapOPTW[op] = tw
-            self.mapTWOP[tw] = op
-
-        print(self.mapTWOP)
-        print(self.mapOPTW)
+        self.tw = tasklib.TaskWarrior()
 
     def listProjects(self):
         tmp = self.tw.execute_command(['projects'])
@@ -38,40 +21,43 @@ class taskwarrior:
 
         return ret
 
-    def new(self, wp):
-        newTask = Task(self.tw)
-        for field in self.fields:
-            if getattr(wp,field) is not None:
-                val = self.'convert_'+field()
-                # getattr(wp,field)
-                print(val)
-            else:
-                print("Field Empty: "+field)
-
-        print(newTask)
-        print(newTask['uuid'])
+    def update(self,task):
+        """
+            Just update status
+            TODO update dependencies
+            TODO update project name
+            TODO soft fail if uuid does not exist
+        """
 
 
-    def convert_status(self,str):
-        print(str)
+        twTask = self.tw.tasks.get(uuid=task.uuid)
+        
+        # if it is closed in OpenProject and can be closed, mark as done
+        if task.isClosed:
+            if twTask.waiting or twTask.pending:
+                twTask.done()
+                twTask.save()
+        else:
+            # if already marked as done, return to active
+            if twTask.completed or twTask.deleted:
+                twTask["status"]='pending'
+                twTask.save()
 
-    def convert_uuid(self,str):
-        print(str)
 
-    def convert_description(self,str):
-        print(str)
+    def new(self,task):
+        localTask = tasklib.Task(self.tw)
+        localTask['description'] = task.description
+        localTask['due'] = task.due
+        localTask['wait'] = task.scheduled
+        localTask['priority'] = task.priority
+        localTask['project'] = task.project
+        if task.next:
+            localTask['tags'] = ['NEXT']
 
-    def convert_due(self,str):
-        print(str)
+        localTask.save()
+        task.uuid = localTask['uuid']
 
-    def convert_scheduled(self,str):
-        print(str)
 
-    def convert_parent(self,str):
-        print(str)
-
-    def convert_project(self,str):
-        print(str)
-
-    def convert_priority(self,str):
-        print(str)
+    def searchTasks(self,days):
+        filterdate = "today-{0:d}days".format(int(days))
+        return self.tw.tasks.filter(modified__after=filterdate)
