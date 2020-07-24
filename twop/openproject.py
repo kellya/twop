@@ -1,6 +1,6 @@
 import json
 import sys
-
+import logging
 import requests as request
 
 # https://docs.openproject.org/api/filters/
@@ -17,11 +17,12 @@ class openproject:
         self.debug = debug
         self.projectId = projectId
 
-    def _ppjson(self, json_object):
+    def _ppjson(self, json_text):
         """
         Helpper function if need to printy print json string
         """
-        json_formatted_str = json.dumps(json_object, indent=2)
+        # json_object = json.loads(json_text)
+        json_formatted_str = json.dumps(json_text, indent=2)
         print(json_formatted_str)
 
     def _callCurl(self, method, path, data={}):
@@ -33,12 +34,28 @@ class openproject:
         resp = ''
         method = method.upper()
 
+
         if method == 'GET':
             resp = request.get(self.baseUrl + path, auth=auth)
         elif method == 'PUT':
             resp = request.put(self.baseUrl + path, auth=auth, json=data)
         elif method == 'POST':
+
+            # debug
+            # https://requests.readthedocs.io/en/master/api/?highlight=debug#api-changes
+            from http.client import HTTPConnection
+            HTTPConnection.debuglevel = 1
+            # You must initialize logging, otherwise you'll not see debug output.
+            logging.basicConfig()
+            logging.getLogger().setLevel(logging.DEBUG)
+            requests_log = logging.getLogger("urllib3")
+            requests_log.setLevel(logging.DEBUG)
+            requests_log.propagate = True
+            print(data)
+
+
             resp = request.post(self.baseUrl + path, auth=auth, json=data)
+            print(request)
         elif method == 'DELETE':
             resp = request.delete(self.baseUrl + path, auth=auth)
         elif method == 'PATCH':
@@ -47,7 +64,7 @@ class openproject:
         else:
             print("Ups")
 
-        if resp.status_code != 200:
+        if not (resp.status_code >= 200 and resp.status_code <= 299) :
             print(resp.text)
             raise Exception('Unexpected result ' + str(resp.status_code))
 
@@ -139,11 +156,10 @@ class openproject:
 
         # TODO Generic update, finding fields to be updated
 
-
     def searchUuid(self, uuid):
         FILTER = [
-            {"subprojectId":{"operator":"*","values":[]}},
-            {"customField1":{"operator":"=","values":[uuid]}},
+            {"subprojectId": {"operator": "*", "values": []}},
+            {"customField1": {"operator": "=", "values": [uuid]}},
             {"type": {"operator": "=", "values": ["1"]}}
         ]
         URI = "/api/v3/projects/{0}/queries/default?filters={1}".format(
@@ -155,10 +171,38 @@ class openproject:
             return None
 
         return result['_embedded']['results']['_embedded']['elements'][0]
-        
 
     def new(self, task):
         task.hello()
+        print(task)
+
+        data = { 
+            "subject": "My subject",
+            "description": {
+                "format": "textile",
+                "raw": "teste",
+                "html": "teste"
+            },
+            "_links": {
+                "type": {"href": "/api/v3/types/1"},
+                "status": {"href": "/api/v3/statuses/1"},
+                "priority": {"href": "/api/v3/priorities/8"},
+                "assignee": {"href": "/api/v3/users/4"}
+            },
+            "customField1" : "5750d112-2954-4d0f-a9b9-f6428c467d44"
+        } 
+            # ,
+            # "customField1": "f70011dc-5bc5-4c75-9a09-052179fbfd1c"
+
+        URI = "/api/v3/projects/{0}/work_packages/".format(
+            "outros-projetos")
+#        URI = "/api/v3//work_packages/form"
+        print(URI)
+        # print(json.dumps(CONTENT))
+        # result = self._callCurl('POST', URI, str(json.dumps(CONTENT)))
+        result = self._callCurl('POST', URI, data)
+        self._ppjson(result)
+        # “Content-Type: application/json”
 
     """
     UnUsed Functions from previous testes
@@ -177,7 +221,6 @@ class openproject:
         for priority in priorities:
             print("{0:20s} {1:s}".format(
                 priority['name'], priority['_links']['self']['href']))
-
 
     def searchEmpty(self):
         FILTER = '[{"subprojectId":{"operator":"*","values":[]}},{"customField1":{"operator":"!*","values":[]}},{"assignee":{"operator":"=","values":["4"]}}]'

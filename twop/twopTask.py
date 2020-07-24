@@ -22,11 +22,10 @@ class task:
             "project",
             "priority",
             "id"]
-        
+
         for op, tw in projects.items():
             self.mapOPTW[op] = tw
             self.mapTWOP[tw] = op
-
 
     def hello(self):
         print("hello")
@@ -38,7 +37,7 @@ class task:
         if project == '':
             raise Exception("Must not be empty")
 
-        return self.mapTWOP.get(project,'')
+        return self.mapTWOP.get(project, '')
 
     def _getTWProject(self, project):
         """
@@ -47,7 +46,7 @@ class task:
         if project == '':
             raise Exception("Must not be empty")
 
-        return self.mapOPTW.get(project,'')
+        return self.mapOPTW.get(project, '')
 
     def _readDateFromOP(self, date):
         if date is None:
@@ -127,7 +126,6 @@ class task:
         except KeyError:
             self.isClosed = False
 
-
     def readFromTaskwarrior(self, task):
         self.wp = None
         self.taskwarrior = task
@@ -149,16 +147,17 @@ class task:
             self.project = task['project']
         except KeyError:
             self.project = None
-
+        
         try:
             self.priority = task['priority']
-            if "NEXT" in task['tags'].values(): 
+            if "NEXT" in task['tags']:
                 self.next = True
-            else
+            else:
                 self.next = False
 
-         except KeyError:
+        except KeyError:
             self.priority = None
+            self.next = False
 
         try:
             self.assignee = task['assignee']

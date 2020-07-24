@@ -121,23 +121,33 @@ def main():
     twTasks = tw.searchTasks(config['lessThanDaysAgo'])
     for twTask in twTasks:
         print (twTask['description'])
-        print (type(twTask['entry'])    )
-
+        print (twTask['status'])
         uuid=twTask['uuid']
         print (uuid)
         opTask = op.searchUuid(uuid)
+        print(opTask)
 
-        task.readFromTaskwarrior(twTask)
+        # for debuging
+        exclusions = ('436e9990-8fc2-4f80-8878-f99f0cf2968a')
+        if uuid in exclusions:
+            continue
+
+
+        # discard recurring task
+        if 'recurring' == twTask['status']:
+            continue
 
         if opTask is not None:
             # op.update(task)
+            task.readFromTaskwarrior(twTask)
+            print("should update OP Task")
+            continue
             pass
         else:
             # create task
-            # op.new(task)
+            op.new(task)
             pass
 
-        print(opTask)
         
         break
 
