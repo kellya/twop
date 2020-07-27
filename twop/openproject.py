@@ -34,7 +34,6 @@ class openproject:
         resp = ''
         method = method.upper()
 
-
         if method == 'GET':
             resp = request.get(self.baseUrl + path, auth=auth)
         elif method == 'PUT':
@@ -43,19 +42,18 @@ class openproject:
 
             # debug
             # https://requests.readthedocs.io/en/master/api/?highlight=debug#api-changes
-            from http.client import HTTPConnection
-            HTTPConnection.debuglevel = 1
-            # You must initialize logging, otherwise you'll not see debug output.
-            logging.basicConfig()
-            logging.getLogger().setLevel(logging.DEBUG)
-            requests_log = logging.getLogger("urllib3")
-            requests_log.setLevel(logging.DEBUG)
-            requests_log.propagate = True
-            print(data)
-
+            # from http.client import HTTPConnection
+            # HTTPConnection.debuglevel = 1
+            # # You must initialize logging, otherwise you'll not see debug output.
+            # logging.basicConfig()
+            # logging.getLogger().setLevel(logging.DEBUG)
+            # requests_log = logging.getLogger("urllib3")
+            # requests_log.setLevel(logging.DEBUG)
+            # requests_log.propagate = True
+            # print(data)
 
             resp = request.post(self.baseUrl + path, auth=auth, json=data)
-            print(request)
+            # print(request)
         elif method == 'DELETE':
             resp = request.delete(self.baseUrl + path, auth=auth)
         elif method == 'PATCH':
@@ -64,7 +62,7 @@ class openproject:
         else:
             print("Ups")
 
-        if not (resp.status_code >= 200 and resp.status_code <= 299) :
+        if not (resp.status_code >= 200 and resp.status_code <= 299):
             print(resp.text)
             raise Exception('Unexpected result ' + str(resp.status_code))
 
@@ -147,14 +145,51 @@ class openproject:
                        wp['_links']['updateImmediately']['href'],
                        data)
 
+    def _updateField_status(self, task):
+        wp = task.wp
+
+        if task.isClosed:
+            strStatus='Closed'
+        else:
+            strStatus='In progress'
+
+        data = {"_links": {
+            "status": {"href": self._getStatusHref(strStatus)}},
+            "lockVersion": wp['lockVersion']
+        }
+
+        self._callCurl(wp['_links']['updateImmediately']['method'],
+                       wp['_links']['updateImmediately']['href'],
+                       data)
+
     def update(self, task, field=None):
+        """
+            Just update status
+            TODO update dependencies
+            TODO update project name
+            TODO update priority
+            TODO soft fail if uuid does not exist
+        """
 
         if field is not None:
             update_func = getattr(
                 self, '_updateField_{0}'.format(field), lambda x: x)
             return update_func(task)
 
-        # TODO Generic update, finding fields to be updated
+        statusName = task.wp['_links']['status']['title']
+        closedStatus = ['Closed', 'Rejected']
+
+        # if it is closed in TaskWarrior and can be closed, change status
+        if task.isClosed:
+            if statusName not in closedStatus:
+                update_func = getattr(
+                    self, '_updateField_{0}'.format('status'), lambda x: x)
+                return update_func(task)
+        else:
+            if statusName in closedStatus:
+                update_func = getattr(
+                    self, '_updateField_{0}'.format('status'), lambda x: x)
+                return update_func(task)
 
     def searchUuid(self, uuid):
         FILTER = [
@@ -172,37 +207,50 @@ class openproject:
 
         return result['_embedded']['results']['_embedded']['elements'][0]
 
-    def new(self, task):
-        task.hello()
-        print(task)
+    def _getStatusHref(self, strStatus):
+        status = {"New": "/api/v3/statuses/1",
+                  "In progress": "/api/v3/statuses/7",
+                  "Closed": "/api/v3/statuses/12"}
 
-        data = { 
-            "subject": "My subject",
+        return status[strStatus]
+
+    def _getPriorityHref(self, strPriority):
+        priority = {'Low': "/api/v3/priorities/7",
+                    "Normal": "/api/v3/priorities/8",
+                    'High': "/api/v3/priorities/9",
+                    'Immediate': "/api/v3/priorities/10"}
+
+        return priority[strPriority]
+
+    def new(self, task):
+        info = task.readToOpenProject()
+        # TODO turn it automatic
+        data = {
+            "subject": info['subject'],
             "description": {
                 "format": "textile",
-                "raw": "teste",
-                "html": "teste"
+                "raw": "",
+                "html": ""
             },
             "_links": {
+                # task
                 "type": {"href": "/api/v3/types/1"},
-                "status": {"href": "/api/v3/statuses/1"},
-                "priority": {"href": "/api/v3/priorities/8"},
+                # alwayes new in this case
+                "status": {"href": self._getStatusHref('New')},
+                "priority": {"href": self._getPriorityHref(info['priority'])},
+                # me
+                # TODO to do it with config info
                 "assignee": {"href": "/api/v3/users/4"}
             },
-            "customField1" : "5750d112-2954-4d0f-a9b9-f6428c467d44"
-        } 
-            # ,
-            # "customField1": "f70011dc-5bc5-4c75-9a09-052179fbfd1c"
+            "customField1": info['customField1']
+        }
 
         URI = "/api/v3/projects/{0}/work_packages/".format(
-            "outros-projetos")
-#        URI = "/api/v3//work_packages/form"
-        print(URI)
-        # print(json.dumps(CONTENT))
-        # result = self._callCurl('POST', URI, str(json.dumps(CONTENT)))
-        result = self._callCurl('POST', URI, data)
-        self._ppjson(result)
-        # “Content-Type: application/json”
+            info['project'])
+        # print(URI)
+        # print(data)
+        self._callCurl('POST', URI, data)
+        # self._ppjson(result)
 
     """
     UnUsed Functions from previous testes

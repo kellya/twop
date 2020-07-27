@@ -99,12 +99,7 @@ def main():
         task.readFromOpenProject(op.directCall(
             workPackage['_links']['self']['href']))
 
-        print ("Working on WP: "+task.id)
-        # for debuging
-        exclusions = ('0','57','65','103')
-        if task.id in exclusions:
-            continue
-
+        print ("Working on WP: " + task.id)
         if task.hasUuid():
             print("tw.update")
             tw.update(task)
@@ -114,45 +109,49 @@ def main():
             print("op.update")
             op.update(task,'uuid')
 
-        break
+        # input("Press Enter to continue:\n")
+
 
 
     # process task from TaskWarrior
     twTasks = tw.searchTasks(config['lessThanDaysAgo'])
     for twTask in twTasks:
-        print (twTask['description'])
-        print (twTask['status'])
         uuid=twTask['uuid']
-        print (uuid)
         opTask = op.searchUuid(uuid)
-        print(opTask)
-
-        # for debuging
-        exclusions = ('436e9990-8fc2-4f80-8878-f99f0cf2968a')
-        if uuid in exclusions:
-            continue
-
 
         # discard recurring task
         if 'recurring' == twTask['status']:
             continue
 
-        if opTask is not None:
-            # op.update(task)
-            task.readFromTaskwarrior(twTask)
-            print("should update OP Task")
+        print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+        print ("Description: "+twTask['description'])
+        print ("Status: " + twTask['status'])
+        print ("UUID: " + uuid)
+        print ("Project: " + str(twTask['project']))
+        task.readFromTaskwarrior(twTask)
+        print ("Project: " + str(task.project))
+
+        # ignore projects without project
+        if task.project is None :
             continue
-            pass
-        else:
-            # create task
-            op.new(task)
-            pass
 
         
-        break
+        if opTask is not None:
+            print ("optask: " + str(opTask['id']))
+        else:
+            print ("optask: " + str(opTask))
 
+        task.addWP(opTask)
 
+        if opTask is not None:
+            print("should update OP Task")
+            op.update(task)
+        else:
+            # create task
+            print("Create new task")
+            op.new(task)
 
+        # input("Press Enter to continue:\n")
 
 
     # parser = argparse.ArgumentParser('tasksync', parents=[oauth2client.tools.argparser])

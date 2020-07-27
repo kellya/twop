@@ -37,7 +37,7 @@ class task:
         if project == '':
             raise Exception("Must not be empty")
 
-        return self.mapTWOP.get(project, '')
+        return self.mapTWOP.get(project, None)
 
     def _getTWProject(self, project):
         """
@@ -46,7 +46,7 @@ class task:
         if project == '':
             raise Exception("Must not be empty")
 
-        return self.mapOPTW.get(project, '')
+        return self.mapOPTW.get(project, None)
 
     def _readDateFromOP(self, date):
         if date is None:
@@ -79,9 +79,9 @@ class task:
             Given a string with TW Priority and a Boolena, convert it to OP Priority
         """
         if priority == 'L':
-            return 'Low', False
+            return 'Low'
         elif priority == 'M':
-            return 'Normal', False
+            return 'Normal'
         elif priority == 'H' and next is False:
             return 'High'
         elif priority == 'H' and next is True:
@@ -144,7 +144,10 @@ class task:
             self.parent = None
 
         try:
-            self.project = task['project']
+            if self._getOPProject(task['project']) is not None:
+                self.project = task['project']
+            else:
+                self.project = None
         except KeyError:
             self.project = None
         
@@ -169,6 +172,24 @@ class task:
         except KeyError:
             self.isClosed = False
 
+    def readToOpenProject(self):
+        """
+        Return values compatible with OpenProject
+
+        TODO add all fields
+        """ 
+        fields={}
+
+        fields.update( {'subject': self.description} )
+        fields.update( {'isClosed': self.isClosed } )
+        fields.update( {'priority': self._getOPPriority(self.priority,self.next) } )
+        fields.update( {'customField1': self.uuid} )
+        fields.update( {'project': self._getOPProject(self.project)} )
+
+        return fields
+
+    def addWP(self,wp):
+        self.wp = wp
 
     def hasUuid(self):
         if self.uuid is None or self.uuid == '':

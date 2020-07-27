@@ -26,6 +26,7 @@ class taskwarrior:
             Just update status
             TODO update dependencies
             TODO update project name
+            TODO update priority
             TODO soft fail if uuid does not exist
         """
 
