@@ -11,6 +11,9 @@ I try to it generic, but covering my needs.
 
 Feel free to use it, but at your own risc.
 
+### TODO
+[ ] Make code cleaner. It is a confusion.
+[ ] When create new task, also update the status and do not leave as new
 
 
 ### Using it
