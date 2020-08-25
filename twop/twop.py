@@ -100,6 +100,9 @@ def main():
             workPackage['_links']['self']['href']))
 
         print ("Working on WP: " + task.id)
+        print ("             : " + task.uuid)
+        print ("Closed       : " + str(task.isClosed))
+
         if task.hasUuid():
             print("tw.update")
             tw.update(task)
@@ -141,6 +144,7 @@ def main():
         else:
             print ("optask: " + str(opTask))
 
+        # add OP workpackage informaton to be used TODO It is ugly
         task.addWP(opTask)
 
         if opTask is not None:
@@ -151,7 +155,7 @@ def main():
             print("Create new task")
             op.new(task)
 
-        # input("Press Enter to continue:\n")
+        input("Press Enter to continue:\n")
 
 
     # parser = argparse.ArgumentParser('tasksync', parents=[oauth2client.tools.argparser])

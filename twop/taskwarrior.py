@@ -3,6 +3,8 @@ import re
 import sys
 import tasklib
 
+from pprint import pprint # for debugging
+
 class taskwarrior:
     """
     This class is to interact with taskwarrior
@@ -10,6 +12,8 @@ class taskwarrior:
 
     def __init__(self, maps={}):
         self.tw = tasklib.TaskWarrior()
+
+
 
     def listProjects(self):
         tmp = self.tw.execute_command(['projects'])
@@ -32,6 +36,13 @@ class taskwarrior:
 
 
         twTask = self.tw.tasks.get(uuid=task.uuid)
+
+        # just update if previous information is the information is newer
+        
+        if twTask['modified'] > task.modified:
+                pass
+                print("TaskWarrior has newer information. Skip")
+                return     
         
         # if it is closed in OpenProject and can be closed, mark as done
         if task.isClosed:

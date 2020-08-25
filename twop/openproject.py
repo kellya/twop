@@ -2,6 +2,9 @@ import json
 import sys
 import logging
 import requests as request
+import re
+from datetime import datetime
+from pprint import pprint # for debugging
 
 # https://docs.openproject.org/api/filters/
 
@@ -24,6 +27,17 @@ class openproject:
         # json_object = json.loads(json_text)
         json_formatted_str = json.dumps(json_text, indent=2)
         print(json_formatted_str)
+
+    # borrow from twopTask
+    def _readDateFromOP(self, date):
+        if date is None:
+            return date
+
+        # suporte the Z in the end
+        # https://stackoverflow.com/questions/127803/how-do-i-parse-an-iso-8601-formatted-date/49784038#comment94022430_49784038
+        date = re.sub(r'Z$', '+00:00', date)
+
+        return datetime.fromisoformat(date)
 
     def _callCurl(self, method, path, data={}):
         """
@@ -170,6 +184,13 @@ class openproject:
             TODO update priority
             TODO soft fail if uuid does not exist
         """
+
+        # just update if previous information is is newer
+        if  self._readDateFromOP(task.wp['updatedAt']) > task.modified:
+                pass
+                print("OpenProject has newer information. Skip")
+                return     
+
 
         if field is not None:
             update_func = getattr(

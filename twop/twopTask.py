@@ -1,12 +1,13 @@
 import json
 import re
 from datetime import datetime
+from pprint import pprint # for debugging
 
 
 class task:
 
     """
-    This class is to conver information between taskwarrior and openproject
+    This class is to convert information between taskwarrior and openproject
     """
 
     def __init__(self, projects={}):
@@ -26,9 +27,6 @@ class task:
         for op, tw in projects.items():
             self.mapOPTW[op] = tw
             self.mapTWOP[tw] = op
-
-    def hello(self):
-        print("hello")
 
     def _getOPProject(self, project):
         """
@@ -97,6 +95,7 @@ class task:
         self.description = str(wp['subject'])
         self.due = self._readDateFromOP(wp['dueDate'])
         self.scheduled = self._readDateFromOP(wp['startDate'])
+        self.modified= self._readDateFromOP(wp['updatedAt'])
 
         # TODO Need work, never tested
         try:
@@ -122,7 +121,7 @@ class task:
             self.assignee = None
 
         try:
-            self.isClosed = wp['_embedded']['status']['isClosed'] == 'true'
+            self.isClosed = wp['_embedded']['status']['isClosed'] 
         except KeyError:
             self.isClosed = False
 
@@ -136,6 +135,8 @@ class task:
         self.description = task['description']
         self.due = task['entduery']
         self.scheduled = task['scheduled']
+        self.modified = task['modified']
+
 
         # TODO Need work, never tested
         try:
