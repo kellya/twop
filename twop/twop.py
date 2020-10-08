@@ -100,7 +100,6 @@ def main():
             workPackage['_links']['self']['href']))
 
         print ("Working on WP: " + task.id)
-        print ("             : " + task.uuid)
         print ("Closed       : " + str(task.isClosed))
 
         if task.hasUuid():
