@@ -11,11 +11,11 @@ before me :)
 
 ### What do I want to add to this?
 
-[ ] Modern tooling (poetry in particular)
-[ ] CLI options (via click probably)
-[ ] XDG_CONFIG_HOME based config file
-[ ] Maybe yaml-based config
-[ ] Others as I discover stuff I want to do that it doesn't yet :)
+    - [ ] Modern tooling (poetry in particular)
+    - [ ] CLI options (via click probably)
+    - [ ] XDG_CONFIG_HOME based config file
+    - [ ] Maybe yaml-based config
+    - [ ] Others as I discover stuff I want to do that it doesn't yet :)
 
 ### Using it
 
