@@ -1,36 +1,54 @@
 TaskWarriorOpenProject
-=============================
+======================
 
-Purpose of this projects is to scratch my own itches:
+This is a fork of the [original twop](https://github.com/flippipe/twop).  The
+project is archived, and is the first one I found that looks to do what I wanted
+out of a synchronizer.
 
-1. Synchronize my TaskWarrior tasks with Team OpenProject Server
-2. Learn some git
-3. Learn some python
+Since I don't want to spend time figuring out all the openproject API stuff (in
+particular) I am riding on the shoulders of those who have done that hard work
+before me :)
 
-I try to it generic, but covering my needs.
+### What do I want to add to this?
 
-Feel free to use it, but at your own risc.
-
-### TODO
-[ ] Make code cleaner. It is a confusion.
-[ ] When create new task, also update the status and do not leave as new
-
+[ ] Modern tooling (poetry in particular)
+[ ] CLI options (via click probably)
+[ ] XDG_CONFIG_HOME based config file
+[ ] Maybe yaml-based config
+[ ] Others as I discover stuff I want to do that it doesn't yet :)
 
 ### Using it
 
-    $ git clone https://github.com/flippipe/twop
-    $ cd twop
-    $ twop/bin/twop.sh
+    Clone the repo: git clone https://github.com/kellya/twop
 
-Firt time it run, tries to generate the configuration file. Be prepared to fullfield your `OpenProject URL`  and your `API Key`.
+    Get into the cloned dir: cd twop
 
-### thanks for...
+    (you may want to set up a virtual environment here)
 
-Scot, for your [python-packaging tutorial](https://python-packaging.readthedocs.io/en/latest/about.html)
+    Install this: pip install .
+
+### Updating it
+    Within the cloned repo dir:
+
+    update from remote: git pull
+
+    reinstall: pip install --force-reinstall .
 
 
-### Lessons Learned
+### First run
 
-| Context | Problem | Resolution | 
-|---|---|---|
-|OpenProject| PATCH call returns error: "Could not update the resource because of conflicting modifications." | In API call must be sent lockVersion attribute with the version return earlier |
+The first time twop is run, it will generate a configuration file in the current
+directory.  You must have the following information:
+
+Your OpenProject base URL.  Something like "openproject.yourdomain.com"
+
+Your API Key, which you can get by: 
+
+    1. Log in to your openproject site
+    2. Click on your user name in the upper right-hand corner
+    3. Click on `my account`
+    4. Click `Access Tokens`
+    5. Click on `generate` on the API line.
+
+After entering this information, twop will attempt to pull a project list to get
+you started.
