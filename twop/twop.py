@@ -1,9 +1,9 @@
 import os
 import sys
 import json
-import openproject
+from twop import openproject
 import taskwarrior
-import twopTask
+from twop import twopTask
 
 # import argparse
 # import logging
